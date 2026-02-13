@@ -76,12 +76,11 @@ cd frontend
 npm install
 npm run dev
 
-
+```
 ---
 
 ## 🎥 Demo Video
 
-👉 Add your demo video link here:  
 **Video Link:** https://drive.google.com/file/d/1b1g2osQ7lWGtvmZU_613SyfVy5wdS3SJ/view?usp=sharing 
 
 ---
