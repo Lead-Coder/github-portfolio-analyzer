@@ -1,202 +1,255 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { ThumbsUp, ThumbsDown, AlertTriangle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ThumbsUp, AlertTriangle, Download, Star, TrendingUp, Code } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import {
   ResponsiveContainer,
-  BarChart,
+  LineChart,
   CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
   Legend,
-  Bar
+  Line
 } from 'recharts';
 
 import PageWrapper from '../components/PageWrapper';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
 
-interface SkillMatch {
-  skill: string;
-  score: number;
-}
 
-interface ApiResponse {
+interface RepositoryAnalysis {
   username: string;
-  avatar_url: string;
+  repository: string;
+  githubUrl: string;
   github_score: number;
+  code_quality_score: number;
+  code_organization: string;
+  readme_quality: string;
+  strengths: Array<{ id: string; text: string }>;
+  red_flags: Array<{ id: string; text: string }>;
   hire_recommendation: string;
-  strengths: string[];
-  weaknesses: string[];
-  risk_flags: string[];
+  activity_data: { month: string; commits: number; prs: number }[];
+  technical_diversity: {
+    languages: { id: string; name: string; percentage: number }[];
+    frameworks: { id: string; name: string }[];
+  };
+  pull_request_metrics: {
+    total: number;
+    merged: number;
+    average_review_time: string;
+  };
+  consistency_score: number;
   final_verdict: string;
-  skill_match: SkillMatch[];
 }
+
+const generateHardcodedData = (): RepositoryAnalysis => {
+  const username = "demo-user";
+
+  return {
+    username,
+    repository: username,
+    githubUrl: "https://github.com/demo-user",
+
+    github_score: 88,
+    code_quality_score: 85,
+    code_organization: "Excellent - Modular and scalable architecture",
+    readme_quality: "Comprehensive and beginner friendly",
+
+    strengths: [
+      { id: "s1", text: "Clean and well-documented codebase" },
+      { id: "s2", text: "Consistent commits over time" },
+      { id: "s3", text: "Strong problem-solving ability" },
+      { id: "s4", text: "Good use of modern frameworks" }
+    ],
+
+    red_flags: [
+      { id: "r1", text: "Limited unit test coverage" },
+      { id: "r2", text: "Few collaborative projects" }
+    ],
+
+    hire_recommendation: "HIGHLY RECOMMENDED",
+
+    activity_data: [
+      { month: "Jan", commits: 30, prs: 6 },
+      { month: "Feb", commits: 34, prs: 8 },
+      { month: "Mar", commits: 28, prs: 5 },
+      { month: "Apr", commits: 36, prs: 9 },
+      { month: "May", commits: 40, prs: 10 },
+      { month: "Jun", commits: 38, prs: 7 }
+    ],
+
+    technical_diversity: {
+      languages: [
+        { id: "l1", name: "JavaScript", percentage: 30 },
+        { id: "l2", name: "TypeScript", percentage: 25 },
+        { id: "l3", name: "Python", percentage: 20 },
+        { id: "l4", name: "Java", percentage: 15 },
+        { id: "l5", name: "CSS", percentage: 10 }
+      ],
+      frameworks: [
+        { id: "f1", name: "React" },
+        { id: "f2", name: "Next.js" },
+        { id: "f3", name: "Django" },
+        { id: "f4", name: "FastAPI" },
+        { id: "f5", name: "Express.js" }
+      ]
+    },
+
+    pull_request_metrics: {
+      total: 120,
+      merged: 108,
+      average_review_time: "10 hours"
+    },
+
+    consistency_score: 90,
+
+    final_verdict:
+      "This candidate demonstrates strong technical skills with consistent contributions and well-structured projects. Highly suitable for full-stack developer roles."
+  };
+};
+
 
 const RecruiterResultPage = () => {
 
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
 
-  const githubUrl = params.get("url") || "";
-  const role = params.get("role") || "";
-  const experience = params.get("experience") || "";
-  const skills = params.get("skills") || "";
+  const data = generateHardcodedData();
 
-  const [data, setData] = useState<ApiResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const downloadPDF = async () => {
+    if (!reportRef.current) return;
 
-  useEffect(() => {
-    if (githubUrl) fetchData();
-  }, [githubUrl]);
+    setDownloading(true);
 
-  const fetchData = async () => {
-    try {
-      const res = await fetch(
-        `http://127.0.0.1:8000/analyze?url=${encodeURIComponent(githubUrl)}&role=${role}&experience=${experience}&skills=${skills}`
-      );
+    const canvas = await html2canvas(reportRef.current, {
+      scale: 2,
+      backgroundColor: "#ffffff"
+    });
 
-      const result = await res.json();
-      setData(result);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const imgWidth = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+    pdf.save(`${data.username}_report.pdf`);
+
+    setDownloading(false);
   };
 
-  if (loading) {
-    return (
-      <PageWrapper>
-        <DashboardLayout>
-          <p className="text-center">Analyzing GitHub profile...</p>
-        </DashboardLayout>
-      </PageWrapper>
-    );
-  }
-
-  if (!data) {
-    return (
-      <PageWrapper>
-        <DashboardLayout>
-          <p className="text-center text-red-500">No data returned</p>
-        </DashboardLayout>
-      </PageWrapper>
-    );
-  }
+  /* ------------------------------------------------ */
 
   return (
     <PageWrapper>
       <DashboardLayout>
 
-        <div className="space-y-8">
+        <div ref={reportRef} className="space-y-8">
 
-          {/* PROFILE */}
-          <Card className="glassmorphism">
+          {/* HEADER */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold">{data.username}</h1>
+              <p className="text-gray-500">GitHub Analysis Report</p>
+            </div>
+
+            <Button onClick={downloadPDF} disabled={downloading}>
+              <Download size={18} />
+              {downloading ? "Generating..." : "Download PDF"}
+            </Button>
+          </div>
+
+          {/* OVERVIEW CARD */}
+          <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>{data.username}</CardTitle>
                   <CardDescription>
-                    <a
-                      href={`https://github.com/${data.username}`}
-                      target="_blank"
-                      className="text-primary"
-                    >
-                      @{data.username}
-                    </a>
+                    <a href={data.githubUrl} target="_blank">View GitHub</a>
                   </CardDescription>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-sm">Overall Score</p>
+                  <p className="text-sm">GitHub Score</p>
                   <p className="text-5xl font-bold">{data.github_score}</p>
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="flex justify-between items-center border-t pt-4">
-              <h3 className="font-semibold">Hire Recommendation</h3>
-              <Badge>{data.hire_recommendation}</Badge>
+            <CardContent>
+              <Badge className="bg-green-500">{data.hire_recommendation}</Badge>
             </CardContent>
           </Card>
 
-          {/* GRID */}
-          <div className="grid lg:grid-cols-2 gap-8">
+          {/* CODE QUALITY */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Code size={20} /> Code Quality
+              </CardTitle>
+            </CardHeader>
 
-            {/* SKILLS */}
+            <CardContent>
+              <p>{data.code_organization}</p>
+              <p>{data.readme_quality}</p>
+            </CardContent>
+          </Card>
+
+          {/* ACTIVITY CHART */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Activity</CardTitle>
+            </CardHeader>
+
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data.activity_data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="commits" stroke="#6366f1" />
+                  <Line type="monotone" dataKey="prs" stroke="#22c55e" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* STRENGTHS & FLAGS */}
+          <div className="grid md:grid-cols-2 gap-6">
+
             <Card>
               <CardHeader>
-                <CardTitle>Skill Match</CardTitle>
+                <CardTitle className="flex gap-2">
+                  <ThumbsUp size={20} /> Strengths
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-[320px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.skill_match ?? []} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" domain={[0, 100]} />
-                      <YAxis type="category" dataKey="skill" width={90} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="score" fill="hsl(var(--primary))" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                {data.strengths.map(s => (
+                  <p key={s.id}>• {s.text}</p>
+                ))}
               </CardContent>
             </Card>
 
-            {/* STRENGTHS & WEAKNESSES */}
-            <div className="space-y-8">
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex gap-2">
-                    <ThumbsUp className="text-green-500" /> Strengths
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="list-disc list-inside space-y-2">
-                    {(data.strengths ?? []).map((s, i) => (
-                      <li key={`s-${i}`}>{s}</li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex gap-2">
-                    <ThumbsDown className="text-yellow-500" /> Weaknesses
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="list-disc list-inside space-y-2">
-                    {(data.weaknesses ?? []).map((w, i) => (
-                      <li key={`w-${i}`}>{w}</li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex gap-2">
+                  <AlertTriangle size={20} /> Areas to Improve
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {data.red_flags.map(r => (
+                  <p key={r.id}>• {r.text}</p>
+                ))}
+              </CardContent>
+            </Card>
 
           </div>
-
-          {/* VERDICT */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex gap-2">
-                <AlertTriangle className="text-red-500" />
-                Final Verdict
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="bg-secondary p-4 rounded-md text-sm">
-                {data.final_verdict}
-              </p>
-            </CardContent>
-          </Card>
 
         </div>
 

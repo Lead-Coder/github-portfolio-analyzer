@@ -379,7 +379,7 @@ const LandingPage = () => {
                         "Benchmark against peers and industry standards"
                       ].map((feature, i) => (
                         <motion.p 
-                          key={i}
+                          key={`student-feature-${i}`}
                           className="flex items-start gap-3"
                           initial={{ opacity: 0, x: -20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -417,7 +417,7 @@ const LandingPage = () => {
                         "Access comprehensive analytics and candidate comparisons"
                       ].map((feature, i) => (
                         <motion.p 
-                          key={i}
+                          key={`recruiter-feature-${i}`}
                           className="flex items-start gap-3"
                           initial={{ opacity: 0, x: -20 }}
                           whileInView={{ opacity: 1, x: 0 }}

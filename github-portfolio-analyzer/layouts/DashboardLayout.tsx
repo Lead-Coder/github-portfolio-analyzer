@@ -6,17 +6,17 @@ import { useAppStore } from '../store/useAppStore';
 import { ThemeToggle } from '../components/ThemeToggle';
 
 const studentNavItems = [
-  { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/student/result', label: 'Analyze Profile', icon: BarChart },
-  { href: '#', label: 'History', icon: History },
-  { href: '#', label: 'Settings', icon: Settings },
+  { id: 'nav-1', href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'nav-2', href: '/student/result', label: 'Analyze Profile', icon: BarChart },
+  { id: 'nav-3', href: '#', label: 'History', icon: History },
+  { id: 'nav-4', href: '#', label: 'Settings', icon: Settings },
 ];
 
 const recruiterNavItems = [
-  { href: '/recruiter/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '#', label: 'Candidates', icon: UserCheck },
-  { href: '#', label: 'History', icon: History },
-  { href: '#', label: 'Settings', icon: Settings },
+  { id: 'nav-5', href: '/recruiter/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'nav-6', href: '#', label: 'Candidates', icon: UserCheck },
+  { id: 'nav-7', href: '#', label: 'History', icon: History },
+  { id: 'nav-8', href: '#', label: 'Settings', icon: Settings },
 ];
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -34,7 +34,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 <nav className="flex flex-col gap-2 flex-grow mt-8">
                     {navItems.map(item => (
                         <Link
-                            key={item.href}
+                            key={item.id}
                             to={item.href}
                             className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${location.pathname === item.href ? 'bg-muted text-primary' : 'text-muted-foreground'}`}
                         >
