@@ -51,14 +51,6 @@ This platform helps recruiters make faster, data-driven screening decisions and 
 - GitHub REST API  
 - Google Gemini API (`google-genai`)  
 
----
-
-## 🎥 Demo Video
-
-👉 Add your demo video link here:  
-**Video Link:** https://your-video-link-here.com  
-
----
 
 ## 🏗️ System Architecture
 
@@ -85,4 +77,11 @@ npm install
 npm run dev
 
 
-Video link:
+---
+
+## 🎥 Demo Video
+
+👉 Add your demo video link here:  
+**Video Link:** https://drive.google.com/file/d/1b1g2osQ7lWGtvmZU_613SyfVy5wdS3SJ/view?usp=sharing 
+
+---
